@@ -9,6 +9,9 @@ edition = "2018"
 rand = "0.5.5"
 bevy = "0.5"
 bevy_tilemap = "0.4.0"
+bevy_4x_camera = "0.1.2"
+bevy-inspector-egui = "0.4"
+bevycheck = "0.1"
 
 [[bin]]
 name = "imperianova"

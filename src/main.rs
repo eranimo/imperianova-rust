@@ -1,10 +1,11 @@
-use bevy::{asset::LoadState, prelude::*, sprite::TextureAtlasBuilder, window::WindowMode};
+use bevy::{asset::LoadState, input::mouse::MouseWheel, prelude::*, render::camera::OrthographicProjection, sprite::TextureAtlasBuilder, window::WindowMode};
 use bevy_tilemap::prelude::*;
+use bevy_inspector_egui::WorldInspectorPlugin;
 
 fn main() {
     App::build()
         .insert_resource(WindowDescriptor {
-            title: "Hex Even Columns".to_string(),
+            title: "Imperianova".to_string(),
             width: 1024.,
             height: 720.,
             vsync: false,
@@ -16,9 +17,12 @@ fn main() {
         .init_resource::<GameState>()
         .add_plugins(DefaultPlugins)
         .add_plugins(TilemapDefaultPlugins)
+        .add_plugin(WorldInspectorPlugin::new())
         .add_startup_system(setup.system())
         .add_system(load.system())
         .add_system(build_world.system())
+        // .add_system(zoom_system.system())
+        .add_system(panning_system.system())
         .run()
 }
 
@@ -34,8 +38,64 @@ struct GameState {
     spawned: bool,
 }
 
+struct MainCamera;
+
 fn setup(mut tile_sprite_handles: ResMut<SpriteHandles>, asset_server: Res<AssetServer>) {
     tile_sprite_handles.handles = asset_server.load_folder("textures").unwrap();
+}
+
+fn panning_system(
+    sprite_handles: Res<SpriteHandles>,
+    keyboard_input: Res<Input<KeyCode>>,
+    mut cam: Query<(&mut Transform, &mut OrthographicProjection), With<MainCamera>>,
+) {
+    if sprite_handles.atlas_loaded {
+        let (mut pos, mut _cam) = cam.single_mut().unwrap();
+
+        if keyboard_input.pressed(KeyCode::W) {
+            pos.translation.y += 10.0;
+        }
+        if keyboard_input.pressed(KeyCode::S) {
+            pos.translation.y -= 10.0;
+        }
+        if keyboard_input.pressed(KeyCode::A) {
+            pos.translation.x -= 10.0;
+        }
+        if keyboard_input.pressed(KeyCode::D) {
+            pos.translation.x += 10.0;
+        }
+    }
+}
+
+// TODO: fix this
+fn zoom_system(
+    mut whl: EventReader<MouseWheel>,
+    mut cam: Query<(&mut Transform, &mut OrthographicProjection), With<MainCamera>>,
+    windows: Res<Windows>,
+) {
+    const ZOOM_SPEED: f32 = 0.1;
+    const MIN_ZOOM: f32 = 0.1;
+    const MAX_ZOOM: f32 = 3.0;
+    let delta_zoom: f32 = whl.iter().map(|e| e.y).sum();
+    if delta_zoom == 0. {
+        return;
+    }
+
+    let (mut pos, mut cam) = cam.single_mut().unwrap();
+
+    let window = windows.get_primary().unwrap();
+    let window_size = Vec2::new(window.width(), window.height());
+    let mouse_normalized_screen_pos =
+        (window.cursor_position().unwrap() / window_size) * 2. - Vec2::ONE;
+    let mouse_world_pos = pos.translation.truncate()
+        + mouse_normalized_screen_pos * Vec2::new(cam.right, cam.top) * cam.scale;
+
+    cam.scale -= ZOOM_SPEED * delta_zoom * cam.scale;
+    cam.scale = cam.scale.clamp(MIN_ZOOM, MAX_ZOOM);
+
+    pos.translation = (mouse_world_pos
+        - mouse_normalized_screen_pos * Vec2::new(cam.right, cam.top) * cam.scale)
+        .extend(pos.translation.z);
 }
 
 fn load(
@@ -66,7 +126,7 @@ fn load(
             .auto_chunk()
             .auto_spawn(2, 2)
             .topology(GridTopology::HexEvenCols)
-            .dimensions(3, 3)
+            .dimensions(4, 4)
             .chunk_dimensions(8, 4, 1)
             .texture_dimensions(37, 32)
             .texture_atlas(atlas_handle)
@@ -85,7 +145,8 @@ fn load(
 
         commands
             .spawn()
-            .insert_bundle(OrthographicCameraBundle::new_2d());
+            .insert_bundle(OrthographicCameraBundle::new_2d())
+            .insert(MainCamera);
         commands
             .spawn()
             .insert_bundle(tilemap_components)
@@ -128,6 +189,7 @@ fn build_world(
             }
         }
         map.insert_tiles(tiles).unwrap();
+        println!("Chunk width: {} height: {}", chunk_width, chunk_height);
 
         map.spawn_chunk((-1, 0)).unwrap();
         map.spawn_chunk((0, 0)).unwrap();
