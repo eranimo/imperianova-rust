@@ -1,0 +1,27 @@
+[package]
+name = "game_plugin"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[features]
+default = [
+    "bevy/bevy_gltf",
+    "bevy/bevy_winit",
+    "bevy/render",
+    "bevy/png",
+    "bevy_kira_audio/ogg"
+]
+
+[dependencies]
+rand = "0.8"
+bevy = { version = "0.5.0", default-features = false }
+bevy_kira_audio = { version = "0.4.0" }
+bevy_ecs_tilemap = "0.2.0"
+bevy-inspector-egui = "0.4"
+bevycheck = "0.1"
+log = "0.4"
+env_logger = "0.8"
+hex2d = "1.0.0"
+noise = "0.7.0"
