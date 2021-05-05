@@ -1,5 +1,5 @@
 use crate::{GameState, Inspected, loading::TextureAssets};
-use bevy::{prelude::*};
+use bevy::{diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}, prelude::*};
 use bevy_ecs_tilemap::prelude::*;
 use rand::{Rng, thread_rng};
 
@@ -7,8 +7,11 @@ pub struct MapviewPlugin;
 
 impl Plugin for MapviewPlugin {
     fn build(&self, app: &mut AppBuilder) {
+        app.add_plugin(LogDiagnosticsPlugin::default());
+        app.add_plugin(FrameTimeDiagnosticsPlugin::default());
         app.add_system_set(
-            SystemSet::on_enter(GameState::Playing).with_system(setup_map.system()),
+            SystemSet::on_enter(GameState::Playing)
+                .with_system(setup_map.system())
         );
     }
 }
@@ -31,41 +34,25 @@ fn setup_map(
     let material_handle = materials.add(asset);
 
     let mut map = Map::new(
-        Vec2::new(1.0, 1.0).into(),
-        Vec2::new(64.0, 64.0).into(), 
+        Vec2::new(10.0, 10.0).into(), // size in chunks
+        Vec2::new(10.0, 10.0).into(), 
         Vec2::new(TILE_WIDTH, TILE_HEIGHT), 
         Vec2::new(texture.size.width as f32, texture.size.height as f32), 
         0
     );
     map.mesher = Box::new(HexChunkMesher::new(HexType::ColumnEven));
     let map_entity = commands.spawn().id();
-    map.build(&mut commands, &mut meshes, material_handle.clone(), map_entity, true);
+    map.build(&mut commands, &mut meshes, material_handle.clone(), map_entity, false);
+    for x in 0..100 {
+        for y in 0..100 {
+            map.add_tile(&mut commands, MapVec2::new(x, y), Tile {
+                texture_index: 1,
+                ..Default::default()
+            }).unwrap();
+        }
+    }
     commands.entity(map_entity).insert_bundle(MapBundle {
         map,
         ..Default::default()
     });
-
-    // let mut map = Map::new(Vec2::new(1.0, 1.0).into(), Vec2::new(64.0, 64.0).into(), Vec2::new(TILE_WIDTH, TILE_HEIGHT), Vec2::new(TILEMAP_WIDTH, TILEMAP_HEIGHT), 1);
-    // map.mesher = Box::new(HexChunkMesher::new(HexType::ColumnEven));
-    // let map_entity = commands.spawn().id();
-    // map.build(&mut commands, &mut meshes, material_handle.clone(), map_entity, false);
-
-    // let mut random = thread_rng();
-
-    // for _ in 0..100 {
-    //     let position = Vec2::new(
-    //         random.gen_range(0.0..64.0),
-    //         random.gen_range(0.0..64.0),
-    //     );
-    //     // Ignore errors for demo sake.
-    //     let _ = map.add_tile(&mut commands, position.into(), Tile {
-    //         texture_index: 3,
-    //         ..Default::default()
-    //     });
-    // }
-    // commands.entity(map_entity).insert_bundle(MapBundle {
-    //     map,
-    //     transform: Transform::from_xyz(0.0, 0.0, 1.0),
-    //     ..Default::default()
-    // });
 }
