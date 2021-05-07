@@ -2,6 +2,15 @@
 
 Grand strategy game and historical simulator.
 
+## Architecture
+- Game engine: bevy
+- Pathfinding: petgraph
+- AI
+    - Utility AI: big-brain
+- World generation
+    - Noise: noise-rs
+    - Hex grid: chickenwire
+
 
 ## Roadmap
 - [x] Chunk-based hexagon tilemap
@@ -10,9 +19,9 @@ Grand strategy game and historical simulator.
 - [ ] Date system
 - [ ] Play and pause UI
 - [ ] Saving and Loading games from file
-- [ ] Countries
 - [ ] Units rendering on hex grid
 - [ ] Unit movement
+- [ ] Countries
 - [ ] Fog of war
 - [ ] Buildings (village, mine, farm)
 - [ ] Basic pop system
