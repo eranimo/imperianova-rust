@@ -2,11 +2,13 @@ mod loading;
 mod viewport;
 mod mapview;
 mod menu;
+mod playstate;
 
 use crate::viewport::ViewportPlugin;
 use crate::mapview::MapviewPlugin;
 use crate::loading::LoadingPlugin;
 use crate::menu::MenuPlugin;
+use crate::playstate::PlayStatePlugin;
 
 use bevy::app::AppBuilder;
 // use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
@@ -33,6 +35,8 @@ impl Plugin for GamePlugin {
             .add_state(GameState::Loading)
             .add_plugin(LoadingPlugin)
             .add_plugin(MenuPlugin)
+
+            .add_plugin(PlayStatePlugin)
             .add_plugin(ViewportPlugin)
             .add_plugin(MapviewPlugin)
             // .add_plugin(FrameTimeDiagnosticsPlugin::default())

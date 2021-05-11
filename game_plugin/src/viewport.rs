@@ -3,6 +3,8 @@ use bevy::{prelude::*, render::camera::{Camera}};
 
 pub struct ViewportPlugin;
 
+pub struct ViewportCamera;
+
 impl Plugin for ViewportPlugin {
     fn build(&self, app: &mut AppBuilder) {
         app.add_system_set(SystemSet::on_enter(GameState::Playing).with_system(viewport_setup.system()));
@@ -12,13 +14,15 @@ impl Plugin for ViewportPlugin {
 
 fn viewport_setup(mut commands: Commands,) {
     println!("Viewport setup");
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d()).insert(Inspected);
+    commands.spawn_bundle(OrthographicCameraBundle::new_2d())
+        .insert(Inspected)
+        .insert(ViewportCamera);
 }
 
 pub fn viewport_camera(
     time: Res<Time>,
     keyboard_input: Res<Input<KeyCode>>,
-    mut query: Query<&mut Transform, With<Camera>>,
+    mut query: Query<&mut Transform, (With<Camera>, With<ViewportCamera>)>,
 ) {
     for mut transform in query.iter_mut() {
         let mut direction = Vec3::ZERO;

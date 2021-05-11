@@ -27,6 +27,7 @@ pub struct FontAssets {
 
 pub struct TextureAssets {
     pub texture_tileset: Handle<Texture>,
+    pub ui_tileset: Handle<Texture>,
 }
 
 fn start_loading(mut commands: Commands, asset_server: Res<AssetServer>) {
@@ -68,6 +69,7 @@ fn check_state(
 
     commands.insert_resource(TextureAssets {
         texture_tileset: asset_server.get_handle(PATHS.texture_tileset),
+        ui_tileset: asset_server.get_handle(PATHS.ui_tileset),
     });
 
     state.set(GameState::Menu).unwrap();

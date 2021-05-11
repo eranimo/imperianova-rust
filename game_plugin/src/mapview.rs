@@ -1,18 +1,13 @@
-use std::collections::HashMap;
-
-use crate::{GameState, Inspected, loading::TextureAssets};
-use bevy::{diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin}, prelude::*};
+use crate::{GameState, loading::TextureAssets};
+use bevy::{prelude::*};
 use bevy_ecs_tilemap::prelude::*;
 use chickenwire::{coordinate::{CoordSys, MultiCoord, Offset}, hexgrid::{Parity, Tilt}, prelude::HexGrid};
 use noise::{*, utils::{*}};
-use rand::{Rng, thread_rng};
 
 pub struct MapviewPlugin;
 
 impl Plugin for MapviewPlugin {
     fn build(&self, app: &mut AppBuilder) {
-        app.add_plugin(LogDiagnosticsPlugin::default());
-        app.add_plugin(FrameTimeDiagnosticsPlugin::default());
         app.add_system_set(
             SystemSet::on_enter(GameState::Playing)
                 .with_system(
